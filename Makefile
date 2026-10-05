@@ -2,12 +2,23 @@
 ## Two paths: lightweight (default, no Docker) and full Docker.
 
 VENV     := .venv
-PY       := $(VENV)/bin/python
-PIP      := $(VENV)/bin/pip
-JUPYTER  := $(VENV)/bin/jupyter
-JUPYTEXT := $(VENV)/bin/jupytext
-UVICORN  := $(VENV)/bin/uvicorn
-PYTEST   := $(VENV)/bin/pytest
+ifeq ($(OS),Windows_NT)
+	BIN := $(VENV)/Scripts
+	PY  := $(BIN)/python.exe
+	PIP := $(BIN)/pip.exe
+	JUPYTER := $(BIN)/jupyter.exe
+	JUPYTEXT := $(BIN)/jupytext.exe
+	UVICORN := $(BIN)/uvicorn.exe
+	PYTEST := $(BIN)/pytest.exe
+else
+	BIN := $(VENV)/bin
+	PY  := $(BIN)/python
+	PIP := $(BIN)/pip
+	JUPYTER := $(BIN)/jupyter
+	JUPYTEXT := $(BIN)/jupytext
+	UVICORN := $(BIN)/uvicorn
+	PYTEST := $(BIN)/pytest
+endif
 
 .DEFAULT_GOAL := help
 
@@ -49,7 +60,7 @@ notebooks: ## [both] Execute ALL notebooks headless (what the grader runs)
 	@$(JUPYTEXT) --to notebook --update notebooks/[0-9]*.py >/dev/null 2>&1 || true
 	@for nb in notebooks/[0-9]*.ipynb; do \
 		printf '%-42s' "$$nb"; \
-		PATH="$(PWD)/$(VENV)/bin:$$PATH" $(VENV)/bin/jupyter nbconvert --to notebook \
+		PATH="$(PWD)/$(BIN):$$PATH" $(BIN)/jupyter nbconvert --to notebook \
 			--execute --inplace "$$nb" --ExecutePreprocessor.timeout=900 \
 			>/dev/null 2>&1 && echo PASS || echo FAIL; \
 	done
